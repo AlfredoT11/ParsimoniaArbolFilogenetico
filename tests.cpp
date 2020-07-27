@@ -1,4 +1,5 @@
-#include "NodoArbol.hpp"
+//#include "NodoArbol.hpp"
+#include "ArbolFilogenetico.hpp"
 #include <iostream>
 
 
@@ -10,39 +11,21 @@ enum PosicionBase { //Especifica la posición del posible valor de la mutación 
 
 int main(){
 
-    NodoArbol raiz('I', 'N');
-    NodoArbol izquierdoRaiz('I', 'N');
-    NodoArbol derechoRaiz('I', 'N');
-    NodoArbol derechoNivel2('I', 'N');
-    NodoArbol hijo1('H', 'T');
-    NodoArbol hijo2('H', 'C');
-    NodoArbol hijo3('H', 'A');
-    NodoArbol hijo4('H', 'G');
-    NodoArbol hijo5('H', 'A');
+    int numHojas;
+    cin >> numHojas;
 
-    raiz.hijoIzquierdo = &izquierdoRaiz;
-    raiz.hijoDerecho = &derechoRaiz;
+    ArbolFilogenetico arbolPrueba = ArbolFilogenetico(numHojas);
 
-    izquierdoRaiz.hijoIzquierdo = &hijo1;
-    izquierdoRaiz.hijoDerecho = &hijo2;
+    arbolPrueba.raiz.evaluarMutaciones();
+    cout << "Valor A: " << arbolPrueba.raiz.evaluacionesMutaciones[0] <<endl;
+    cout << "Valor T: " << arbolPrueba.raiz.evaluacionesMutaciones[1] <<endl;
+    cout << "Valor G: " << arbolPrueba.raiz.evaluacionesMutaciones[2] <<endl;
+    cout << "Valor C: " << arbolPrueba.raiz.evaluacionesMutaciones[3] <<endl;
 
-    derechoRaiz.hijoIzquierdo = &hijo3;
-    derechoRaiz.hijoDerecho = &derechoNivel2;
+    cout << "Direccion hijo izquierdo: " << arbolPrueba.raiz.hijoIzquierdo << endl;
+    cout << "Direccion hijo derecho: " << arbolPrueba.raiz.hijoDerecho << endl;
 
-    derechoNivel2.hijoIzquierdo = &hijo4;
-    derechoNivel2.hijoDerecho = &hijo5;
-
-    //cout << "Soy la raiz con base: " << raiz.baseNitrogenada << endl;
-    //cout << "Soy el hijo izquierdo a traves de la raiz con base: " << raiz.hijoIzquierdo->baseNitrogenada << endl;
-    //cout << "Soy el hijo derecho a traves de la raiz con base: " << raiz.hijoDerecho->baseNitrogenada << endl;
-    NodoArbol *aux = &raiz;
-    aux->evaluarMutaciones();
-
-    cout << "Valores mutaciones: " << endl;
-    cout << "A: " << aux->evaluacionesMutaciones[PosicionBase::A] << endl;
-    cout << "T: " << aux->evaluacionesMutaciones[PosicionBase::T] << endl;
-    cout << "G: " << aux->evaluacionesMutaciones[PosicionBase::G] << endl;
-    cout << "C: " << aux->evaluacionesMutaciones[PosicionBase::C] << endl;
+    arbolPrueba.raiz.postorden();
 
     return 0;
 }
