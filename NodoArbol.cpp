@@ -1,6 +1,7 @@
 #include "NodoArbol.hpp"
 #include <iostream>
 #include <vector>
+#include <string>
 
 using namespace std;
 
@@ -133,6 +134,31 @@ void NodoArbol::generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrant
         
 }
 
+void NodoArbol::generarTablaNivelesNodosHijos(std::vector<std::vector<NodoArbol*>> &tablaNivelesNodosHijos, NodoArbol *direccionNodo, int nivel){
+    
+    //cout << "Entrando a un nodo de nivel " << nivel << " Objecto con direccion : " << direccionNodo << endl;
+
+    if(tipoNodo == 'I'){
+        if(tablaNivelesNodosHijos.size() != nivel){
+            vector<NodoArbol*> auxVectorNivel;
+            //cout << "Vector creado. " << endl;
+            tablaNivelesNodosHijos.push_back(auxVectorNivel);            
+        }
+        //cout << "Vector agregado a la tabla. " << endl;
+        //tablaNivelesNodosHijos[nivel].push_back(this);
+        //cout << "Dirección del objeto agregada a la tabla. " << endl;
+    }
+
+    if(this->hijoIzquierdo != NULL){
+        this->hijoIzquierdo->generarTablaNivelesNodosHijos(tablaNivelesNodosHijos, hijoIzquierdo, nivel+1);
+    }
+
+    if(this->hijoDerecho != NULL){
+        this->hijoDerecho->generarTablaNivelesNodosHijos(tablaNivelesNodosHijos, hijoDerecho, nivel+1);
+    }    
+
+}
+
 void NodoArbol::postorden(){
 
     //cout << "Entrando a nodo: " << this->id << endl;
@@ -144,6 +170,65 @@ void NodoArbol::postorden(){
         hijoDerecho->postorden();
     }
     cout << id << " ";
+}
+
+void NodoArbol::inorden(){
+    
+    if(hijoIzquierdo != NULL){
+        hijoIzquierdo->inorden();
+    }
+
+    cout << id << " ";
+
+    if(hijoDerecho != NULL){
+        hijoDerecho->inorden();
+    }
+    
+}
+
+
+void NodoArbol::ordenar(int &nuevoID){
+
+    if(hijoIzquierdo != NULL){
+        hijoIzquierdo->ordenar(nuevoID);
+    }
+
+    //cout << id << " ";
+    id = nuevoID;
+    nuevoID++;
+
+    if(hijoDerecho != NULL){
+        hijoDerecho->ordenar(nuevoID);
+    }
+
+}
+
+void NodoArbol::construirFormatoNewick(string &cadenaNewick){
+    
+    if(hijoIzquierdo != NULL && hijoDerecho != NULL){
+        cadenaNewick.append("(");
+        hijoIzquierdo->construirFormatoNewick(cadenaNewick);
+        cadenaNewick.append(",");
+        hijoDerecho->construirFormatoNewick(cadenaNewick);
+        cadenaNewick.push_back(')');
+        return;
+    }else if(hijoIzquierdo != NULL && hijoDerecho == NULL){
+        cadenaNewick.push_back('(');
+        hijoIzquierdo->construirFormatoNewick(cadenaNewick);
+        cadenaNewick.push_back(')');
+        return;
+    }else if(hijoIzquierdo == NULL && hijoDerecho != NULL){
+        cadenaNewick.push_back('(');
+        hijoDerecho->construirFormatoNewick(cadenaNewick);
+        cadenaNewick.push_back(')');
+        return;        
+    }else{
+        cout << "ID: " << id << endl;
+        cadenaNewick.append(to_string(id));
+        return;
+    }
+
+
 }
 
 //typedef NodoArbol *apuNodoArbol;

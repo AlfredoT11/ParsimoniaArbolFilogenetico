@@ -2,6 +2,9 @@
 #define NODOARBOL_HPP
 
 #include <vector>
+#include <string>
+
+using namespace std;
 
 class NodoArbol{
 
@@ -17,10 +20,12 @@ class NodoArbol{
     NodoArbol(char nuevaBaseNitrogenada, int id);
     void evaluarMutaciones();
     void setHijoIzquierdo();
-    void generarHijoDerecho(const int &alturaMaxima, int nivelHijo, int &sobrantes, int id);
-    void generarHijoIzquierdo(const int &alturaMaxima, int nivelHijo, int &sobrantes, int id);
     void generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrantes, int &id, int lado);
+    void generarTablaNivelesNodosHijos(std::vector<std::vector<NodoArbol*>> &tablaNivelesNodosHijos, NodoArbol *direccionNodo, int nivel);
+    void inorden();
     void postorden();
+    void ordenar(int &nuevoID);
+    void construirFormatoNewick(string &cadenaNewick);
 
 };
 
