@@ -18,13 +18,17 @@ class NodoArbol{
 
     NodoArbol(void);
     NodoArbol(char nuevaBaseNitrogenada, int id);
+    void evaluarMutacionHoja();
     void evaluarMutaciones();
     void setHijoIzquierdo();
     void generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrantes, int &id, int lado);
-    void generarTablaNivelesNodosHijos(std::vector<std::vector<NodoArbol*>> &tablaNivelesNodosHijos, NodoArbol *direccionNodo, int nivel);
+    void generarTablaNivelesNodosHijos(std::vector<std::vector<NodoArbol*>> &tablaNivelesNodosHijos, 
+        std::vector<NodoArbol *> &tablaHojas, NodoArbol *direccionNodo, int nivel);
     void inorden();
     void postorden();
     void ordenar(int &nuevoID);
+    NodoArbol* buscarNodoPorID(int &idAEncontrar);
+    void limpiarEvaluacionesMutaciones();
     void construirFormatoNewick(string &cadenaNewick);
 
 };

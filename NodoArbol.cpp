@@ -39,23 +39,29 @@ NodoArbol::NodoArbol(char nuevaBaseNitrogenada, int nuevoID){
         tipoNodo = 'H';
     }
 
-    switch(baseNitrogenada){
-        case 'A':
-        case 'a':
-            evaluacionesMutaciones[PosicionBase::A] = 0;
-            break;
-        case 'T':
-        case 't':
-            evaluacionesMutaciones[PosicionBase::T] = 0;
-            break;
-        case 'G':
-        case 'g':
-            evaluacionesMutaciones[PosicionBase::G] = 0;
-            break;                            
-        case 'C':
-        case 'c':
-            evaluacionesMutaciones[PosicionBase::C] = 0;
-            break;                        
+    evaluarMutacionHoja();
+}
+
+void NodoArbol::evaluarMutacionHoja(){
+    if(tipoNodo == 'H'){
+        switch(baseNitrogenada){
+            case 'A':
+            case 'a':
+                evaluacionesMutaciones[PosicionBase::A] = 0;
+                break;
+            case 'T':
+            case 't':
+                evaluacionesMutaciones[PosicionBase::T] = 0;
+                break;
+            case 'G':
+            case 'g':
+                evaluacionesMutaciones[PosicionBase::G] = 0;
+                break;                            
+            case 'C':
+            case 'c':
+                evaluacionesMutaciones[PosicionBase::C] = 0;
+                break;                        
+        }
     }
 }
 
@@ -68,7 +74,7 @@ void NodoArbol::evaluarMutaciones(){
     }
 
     //Comprobación de que un nodo izquierdo interno aún no ha sido evaluado.
-    if(hijoDerecho->tipoNodo == 'I' && hijoDerecho->evaluacionesMutaciones[-1] && hijoIzquierdo != NULL){
+    if(hijoDerecho->tipoNodo == 'I' && hijoDerecho->evaluacionesMutaciones[-1] && hijoDerecho != NULL){
         hijoDerecho->evaluarMutaciones();
     }            
 
@@ -105,7 +111,27 @@ void NodoArbol::generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrant
     int tempId = id;
 
     if((nivelHijo == alturaMaxima && sobrantes > 0) || nivelHijo > alturaMaxima){
-        NodoArbol *auxNuevoHijo = new NodoArbol('A', tempId);
+        
+
+        //Generación aleatoria para pruebas----------------------------------------
+        char baseAleatoria;
+        switch(rand()%4){
+            case 0:
+            baseAleatoria = 'A';
+            break;
+            case 1:
+            baseAleatoria = 'T';
+            break;
+            case 2:
+            baseAleatoria = 'G';
+            break;
+            default:
+            baseAleatoria = 'C';
+            break;                                    
+        }
+        NodoArbol *auxNuevoHijo = new NodoArbol(baseAleatoria, tempId);
+        //-------------------------------------------------------------------------
+        
         id++;
         if(lado == 0){
             hijoIzquierdo = auxNuevoHijo;
@@ -120,7 +146,7 @@ void NodoArbol::generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrant
     id++;
 
     if(tempId == 9 || tempId == 2){
-        cout << &auxNuevoHijo << endl;
+        //cout << &auxNuevoHijo << endl;
     }
 
     if(lado == 0){
@@ -134,27 +160,32 @@ void NodoArbol::generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrant
         
 }
 
-void NodoArbol::generarTablaNivelesNodosHijos(std::vector<std::vector<NodoArbol*>> &tablaNivelesNodosHijos, NodoArbol *direccionNodo, int nivel){
+void NodoArbol::generarTablaNivelesNodosHijos(std::vector<std::vector<NodoArbol *>> &tablaNivelesNodosHijos, 
+    std::vector<NodoArbol *> &tablaHojas, NodoArbol *direccionNodo, int nivel){
     
     //cout << "Entrando a un nodo de nivel " << nivel << " Objecto con direccion : " << direccionNodo << endl;
 
     if(tipoNodo == 'I'){
-        if(tablaNivelesNodosHijos.size() != nivel){
+        if(tablaNivelesNodosHijos.size() < nivel){
             vector<NodoArbol*> auxVectorNivel;
             //cout << "Vector creado. " << endl;
-            tablaNivelesNodosHijos.push_back(auxVectorNivel);            
+            tablaNivelesNodosHijos.push_back(auxVectorNivel);
+            //cout << "Vector agregado a la tabla. " << endl;
         }
-        //cout << "Vector agregado a la tabla. " << endl;
-        //tablaNivelesNodosHijos[nivel].push_back(this);
-        //cout << "Dirección del objeto agregada a la tabla. " << endl;
+        
+        //cout << "Mi ID es " << id << endl;
+        tablaNivelesNodosHijos[nivel-1].push_back(this);
+        //cout << "Direccion del objeto agregada a la tabla. " << endl;
+    }else{ 
+        tablaHojas.push_back(this);
     }
 
     if(this->hijoIzquierdo != NULL){
-        this->hijoIzquierdo->generarTablaNivelesNodosHijos(tablaNivelesNodosHijos, hijoIzquierdo, nivel+1);
+        this->hijoIzquierdo->generarTablaNivelesNodosHijos(tablaNivelesNodosHijos, tablaHojas, hijoIzquierdo, nivel+1);
     }
 
     if(this->hijoDerecho != NULL){
-        this->hijoDerecho->generarTablaNivelesNodosHijos(tablaNivelesNodosHijos, hijoDerecho, nivel+1);
+        this->hijoDerecho->generarTablaNivelesNodosHijos(tablaNivelesNodosHijos, tablaHojas, hijoDerecho, nivel+1);
     }    
 
 }
@@ -178,7 +209,11 @@ void NodoArbol::inorden(){
         hijoIzquierdo->inorden();
     }
 
-    cout << id << " ";
+    if(tipoNodo == 'H'){
+        cout << id << " " << baseNitrogenada << " ";    
+    }else{
+        cout << id << " ";
+    }
 
     if(hijoDerecho != NULL){
         hijoDerecho->inorden();
@@ -203,8 +238,51 @@ void NodoArbol::ordenar(int &nuevoID){
 
 }
 
-void NodoArbol::construirFormatoNewick(string &cadenaNewick){
+void NodoArbol::limpiarEvaluacionesMutaciones(){
+
+    if(hijoIzquierdo != NULL){
+        hijoIzquierdo->limpiarEvaluacionesMutaciones();
+    }
+
+    if(hijoDerecho != NULL){
+        hijoDerecho->limpiarEvaluacionesMutaciones();
+    }
+
+    for(int i = 0; i < 4; i++){
+        //cout << "Antigua : " << evaluacionesMutaciones[i];
+        evaluacionesMutaciones[i] = -1; //-1 = Infinito.
+        //cout << "Nueva : " << evaluacionesMutaciones[i] << endl;
+    }
+
+    evaluarMutacionHoja();
+
+}
+
+NodoArbol* NodoArbol::buscarNodoPorID(int &idAEncontrar){
     
+    if(this->id == idAEncontrar){
+        //cout << "Encontrado." << endl;
+        return this;
+    }
+
+    if(hijoIzquierdo != NULL && idAEncontrar < this->id){
+        //cout << "Izquierda." << endl;
+        return hijoIzquierdo->buscarNodoPorID(idAEncontrar);
+    }
+
+    if(hijoDerecho != NULL && idAEncontrar > this->id){
+        //cout << "Derecha." << endl;
+        return hijoDerecho->buscarNodoPorID(idAEncontrar);
+    }
+
+    //cout << "No encontrado " << endl;
+    return NULL;
+
+}
+
+void NodoArbol::construirFormatoNewick(string &cadenaNewick){
+
+
     if(hijoIzquierdo != NULL && hijoDerecho != NULL){
         cadenaNewick.append("(");
         hijoIzquierdo->construirFormatoNewick(cadenaNewick);
@@ -223,7 +301,7 @@ void NodoArbol::construirFormatoNewick(string &cadenaNewick){
         cadenaNewick.push_back(')');
         return;        
     }else{
-        cout << "ID: " << id << endl;
+        //cout << "ID: " << id << endl;
         cadenaNewick.append(to_string(id));
         return;
     }
