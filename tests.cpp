@@ -1,6 +1,7 @@
 #include "NodoArbol.hpp"
 #include "ArbolFilogenetico.hpp"
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <time.h>
 
@@ -15,7 +16,7 @@ int main(){
 
     srand((unsigned)time(NULL));
 
-    int numHojas;
+    /*int numHojas;
     vector<vector<NodoArbol*>> tablaPruebaInternos;
     vector<NodoArbol*> tablaPruebaHojas;
     std::string cadenaPrueba = ""; 
@@ -42,7 +43,7 @@ int main(){
     arbolPrueba.raiz.inorden();*/
 
 
-    arbolPrueba.raiz.generarTablaNivelesNodosHijos(tablaPruebaInternos, tablaPruebaHojas, &arbolPrueba.raiz, 1);
+    //arbolPrueba.raiz.generarTablaNivelesNodosHijos(tablaPruebaInternos, tablaPruebaHojas, &arbolPrueba.raiz, 1);
     //cout << "\nTabla generada. " << endl;
 
     /*for(int i = 0; i < tablaPruebaInternos.size(); i++){
@@ -68,6 +69,7 @@ int main(){
 
     cout << "\n" << cadenaPrueba << endl;*/
 
+    /*
     arbolPrueba.raiz.construirFormatoNewick(cadenaPrueba);
     //cout << "\nNewick: " << cadenaPrueba << endl;
     cadenaPrueba = "";
@@ -175,6 +177,63 @@ int main(){
     cout << "Valor T: " << raizNueva3.evaluacionesMutaciones[1] <<endl;
     cout << "Valor G: " << raizNueva3.evaluacionesMutaciones[2] <<endl;
     cout << "Valor C: " << raizNueva3.evaluacionesMutaciones[3] <<endl; */    
+
+    
+    int numHojas, busquedasLocales, perturbaciones;
+    int id = 1;
+    vector<vector<NodoArbol*>> tablaNodosInternos;
+    vector<NodoArbol*> listaHojas;
+
+    cout << "Numero de hojas a generar: ";
+    cin >> numHojas;
+    cout << "Numero de busquedas locales: ";
+    cin >> busquedasLocales;
+    cout << "Numero de perturbaciones: ";
+    cin >> perturbaciones;
+
+    //Se genera el árbol inicial.
+    ArbolFilogenetico arbolPrueba = ArbolFilogenetico(numHojas);
+
+    arbolPrueba.raiz.ordenar(id);
+    
+    //Se evalúa el árbol inicial.
+    arbolPrueba.raiz.evaluarMutaciones();
+
+    //Se obtiene la parsimonia del árbol y se obtiene el formato newick inicial.
+    arbolPrueba.obtenerParsimonia();
+
+    cout << "Parsimonia máxima inicial: " << arbolPrueba.maximaParsimoniaPosible << endl;
+    cout << "Newick: " << arbolPrueba.formatoNewick << endl;
+
+    
+
+    for(int i = 0; i < perturbaciones; i++){
+        vector<vector<NodoArbol*>>().swap(tablaNodosInternos);
+        vector<NodoArbol*>().swap(listaHojas);
+        arbolPrueba.raiz.generarTablaNivelesNodosHijos(tablaNodosInternos, listaHojas, &arbolPrueba.raiz, 1);
+        for(int j = 0; j < busquedasLocales; j++){
+            //cout << "Busqueda local..." << endl;            
+            arbolPrueba.busquedaLocal(listaHojas);
+            arbolPrueba.raiz.evaluarMutaciones();
+            arbolPrueba.obtenerParsimonia();
+            //cout << "\n";
+            //arbolPrueba.raiz.inorden();
+        }
+        cout << "\nPerturbando solución..." << endl;
+        arbolPrueba.perturbarSolucion(tablaNodosInternos);
+        id = 1;
+        arbolPrueba.raiz.ordenar(id);
+
+    }
+
+    cout << "\nMaxima parsimonia final: " << arbolPrueba.maximaParsimoniaPosible << endl;
+    cout << "Arbol final: " << arbolPrueba.formatoNewick << endl;
+
+    ofstream archivoNewick;
+    archivoNewick.open("prueba.newick");
+    archivoNewick << arbolPrueba.formatoNewick << ";";
+    archivoNewick.close();
+
 
     return 0;
 }

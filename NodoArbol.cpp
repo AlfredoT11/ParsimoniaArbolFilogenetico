@@ -68,18 +68,28 @@ void NodoArbol::evaluarMutacionHoja(){
 void NodoArbol::evaluarMutaciones(){
     //Implementación del algoritmo de Sankoff para evaluación de máxima parsimonia.
 
+    if(hijoIzquierdo == NULL){
+        cout << "NodoArbol::evaluarMuraciones: Hijo izquierdo nulo" << endl;
+    }
+
+    if(hijoDerecho == NULL){
+        cout << "NodoArbol::evaluarMuraciones: Hijo derecho nulo" << endl;
+    }
+
     //Comprobación de que un nodo izquierdo interno aún no ha sido evaluado.
-    if(hijoIzquierdo->tipoNodo == 'I' && hijoIzquierdo->evaluacionesMutaciones[-1] && hijoIzquierdo != NULL){
+    if(hijoIzquierdo->tipoNodo == 'I' && hijoIzquierdo->evaluacionesMutaciones[0] == -1 && hijoIzquierdo != NULL){
         hijoIzquierdo->evaluarMutaciones();
     }
 
     //Comprobación de que un nodo izquierdo interno aún no ha sido evaluado.
-    if(hijoDerecho->tipoNodo == 'I' && hijoDerecho->evaluacionesMutaciones[-1] && hijoDerecho != NULL){
+    if(hijoDerecho->tipoNodo == 'I' && hijoDerecho->evaluacionesMutaciones[0] == -1 && hijoDerecho != NULL){
         hijoDerecho->evaluarMutaciones();
     }            
 
     for(int i = 0; i < 4; i++){
         int uMin = 2147483647, wMin = 2147483647; //u = Hijo izquierdo, w = Hijo derecho.
+        bool uMinEncontrado = false;
+        bool wMinEncontrado = false;
 
         for(int j = 0; j < 4; j++){
             if(hijoIzquierdo->evaluacionesMutaciones[j] == -1){
@@ -88,6 +98,7 @@ void NodoArbol::evaluarMutaciones(){
             if(hijoIzquierdo->evaluacionesMutaciones[j] + matrizValoresMutaciones[i][j] <= uMin){
                 //printf("%d %d \n.", hijoIzquierdo->evaluacionesMutaciones[j], matrizValoresMutaciones[i][j]);
                 uMin = hijoIzquierdo->evaluacionesMutaciones[j] + matrizValoresMutaciones[i][j];
+                uMinEncontrado = true;
             }
         }
 
@@ -98,9 +109,21 @@ void NodoArbol::evaluarMutaciones(){
             if(hijoDerecho->evaluacionesMutaciones[j] + matrizValoresMutaciones[i][j] <= wMin){
                 //printf("%d %d \n.", hijoDerecho->evaluacionesMutaciones[j], matrizValoresMutaciones[i][j]);
                 wMin = hijoDerecho->evaluacionesMutaciones[j] + matrizValoresMutaciones[i][j];
+                wMinEncontrado = true;
             }
-        }                
+        }
+
+        if(!uMinEncontrado){
+            uMin = 0;
+        }
+
+        if(!wMinEncontrado){
+            wMin = 0;
+        }
+
         evaluacionesMutaciones[i] = uMin + wMin;
+
+        
         //printf("Total: %d\n", evaluacionesMutaciones[i]);
     } 
 }

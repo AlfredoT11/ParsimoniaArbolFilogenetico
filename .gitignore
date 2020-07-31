@@ -35,3 +35,4 @@
 *.png
 .vscode
 tests.cpp
+*.newick
