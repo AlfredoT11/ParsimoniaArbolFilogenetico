@@ -12,16 +12,17 @@ class NodoArbol{
     NodoArbol *hijoIzquierdo;
     NodoArbol *hijoDerecho;
     char baseNitrogenada;
+    string secuencia;
     char tipoNodo; //Interno = I |Hoja (Secuencia) = H
-    std::vector<int> evaluacionesMutaciones; //Posiciones: [ A=0 | T=1 | G=2 | C=3 ]
+    std::vector<vector<int>> evaluacionesMutaciones; //Posiciones: [ A=0 | T=1 | G=2 | C=3 ]
     int id;
 
     NodoArbol(void);
-    NodoArbol(char nuevaBaseNitrogenada, int id);
+    NodoArbol(char nuevaBaseNitrogenada, int id, int &posicionSecuenciaSeleccionada, vector<int> &posicionGenerada, vector<string> &secuencias);
     void evaluarMutacionHoja();
-    void evaluarMutaciones();
+    void evaluarMutaciones(int &sitioInformativo);
     void setHijoIzquierdo();
-    void generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrantes, int &id, int lado);
+    void generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrantes, int &id, int lado, int &posicionSecuenciaSeleccionada, vector<int> &posicionGenerada, vector<string> &secuencias);
     void generarTablaNivelesNodosHijos(std::vector<std::vector<NodoArbol*>> &tablaNivelesNodosHijos, 
         std::vector<NodoArbol *> &tablaHojas, NodoArbol *direccionNodo, int nivel);
     void inorden();

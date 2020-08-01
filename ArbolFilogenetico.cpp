@@ -5,11 +5,13 @@
 
 using namespace std;
 
-ArbolFilogenetico::ArbolFilogenetico(int numeroHojas){
+ArbolFilogenetico::ArbolFilogenetico(int numeroHojas, int &auxPosSecuencias, vector<int> &listaPosicionesGeneradas, vector<string> &secuencias){
     
     /*cout << "Logaritmo: " << log2(numeroHojas) << endl;
     cout << "Ceil: " << ceil(log2(numeroHojas)) << endl;
     cout << "Entero: " << int(ceil(log2(numeroHojas))) << endl;*/
+
+    cout << "Generando arbol..." << endl;
 
     int alturaMaxima = int(ceil(log2(numeroHojas)));
 
@@ -19,11 +21,13 @@ ArbolFilogenetico::ArbolFilogenetico(int numeroHojas){
     cout << "NumeroHojas: " << numeroHojas << endl;
     cout << "HojasSobrantes: " << hojasSobrantes << endl;*/
 
-    raiz = NodoArbol('N', 1);
+    raiz = NodoArbol('N', 1, auxPosSecuencias, listaPosicionesGeneradas, secuencias);
+    cout << "Raiz generada." << endl;
     int contador = 2;
-    raiz.generarHijo(alturaMaxima, 2, hojasSobrantes, contador, 1);
-    raiz.generarHijo(alturaMaxima, 2, hojasSobrantes, contador, 0);
-
+    raiz.generarHijo(alturaMaxima, 2, hojasSobrantes, contador, 1, auxPosSecuencias, listaPosicionesGeneradas, secuencias);
+    cout << "Hijos izquierdos generados" << endl;
+    raiz.generarHijo(alturaMaxima, 2, hojasSobrantes, contador, 0, auxPosSecuencias, listaPosicionesGeneradas, secuencias);
+    cout << "Hijos izquierdos generados" << endl;
     maximaParsimoniaPosible = -1;
 
 }
@@ -31,27 +35,40 @@ ArbolFilogenetico::ArbolFilogenetico(int numeroHojas){
 void ArbolFilogenetico::obtenerParsimonia(){
     
     if(maximaParsimoniaPosible == -1){
-        maximaParsimoniaPosible = raiz.evaluacionesMutaciones[0];
+        
+        for(int i = 0; i < raiz.evaluacionesMutaciones.size(); i++){
+            int auxiliarMaximaParsimoniaSitio = raiz.evaluacionesMutaciones[i][0];
+            for(int j = 1; j < 3; j++){
+                if(raiz.evaluacionesMutaciones[i][j] < auxiliarMaximaParsimoniaSitio){
+                    auxiliarMaximaParsimoniaSitio = raiz.evaluacionesMutaciones[i][j];
+                }
+            }
+            maximaParsimoniaPosible += auxiliarMaximaParsimoniaSitio;
+        }
         formatoNewick = "";
         raiz.construirFormatoNewick(formatoNewick);
-        for(int i = 1; i < 3; i++){
-            if(raiz.evaluacionesMutaciones[i] < maximaParsimoniaPosible){                
-                maximaParsimoniaPosible = raiz.evaluacionesMutaciones[i];                
-            }
-        }
-        //cout << "Arbol: " << formatoNewick << endl;
+        
     }else{
-        for(int i = 0; i < 3; i++){
-            if(raiz.evaluacionesMutaciones[i] < maximaParsimoniaPosible){
-                formatoNewick = "";
-                maximaParsimoniaPosible = raiz.evaluacionesMutaciones[i];
-                raiz.construirFormatoNewick(formatoNewick);
-                cout << "Nuevo minimo encontrado: " << maximaParsimoniaPosible << endl;
-                //cout << "Arbol: " << formatoNewick << endl;
-                //cout << "Inorden: ";
-                //raiz.inorden();
+
+        int auxMaximaParsimoniaTotal = 0;
+        for(int i = 0; i < raiz.evaluacionesMutaciones.size(); i++){
+            int auxiliarMaximaParsimoniaSitio = raiz.evaluacionesMutaciones[i][0];
+            for(int j = 1; j < 3; j++){
+                if(raiz.evaluacionesMutaciones[i][j] < auxiliarMaximaParsimoniaSitio){
+                    auxiliarMaximaParsimoniaSitio = raiz.evaluacionesMutaciones[i][j];
+                }
             }
-        }        
+            auxMaximaParsimoniaTotal += auxiliarMaximaParsimoniaSitio;
+        }
+
+        //cout << "\nNueva calculada: " << auxMaximaParsimoniaTotal;
+
+        if(auxMaximaParsimoniaTotal < maximaParsimoniaPosible){
+            maximaParsimoniaPosible = auxMaximaParsimoniaTotal;
+            formatoNewick = "";
+            raiz.construirFormatoNewick(formatoNewick);
+            cout << "\nNuevo mínimo encontrado." << endl;
+        }    
     }
 }
 
@@ -75,6 +92,8 @@ void ArbolFilogenetico::busquedaLocal(vector<NodoArbol*> &listaHojas){
     NodoArbol* direccionHoja1;
     NodoArbol* direccionHoja2;
 
+    string auxiliarCambios;
+
     int posHoja1 = rand() % listaHojas.size();
     int posHoja2;
     do{
@@ -92,6 +111,10 @@ void ArbolFilogenetico::busquedaLocal(vector<NodoArbol*> &listaHojas){
     direccionHoja1->baseNitrogenada = direccionHoja1->baseNitrogenada ^ direccionHoja2->baseNitrogenada;
     direccionHoja2->baseNitrogenada = direccionHoja1->baseNitrogenada ^ direccionHoja2->baseNitrogenada;
     direccionHoja1->baseNitrogenada = direccionHoja1->baseNitrogenada ^ direccionHoja2->baseNitrogenada;    
+
+    auxiliarCambios = direccionHoja1->secuencia;
+    direccionHoja1->secuencia = direccionHoja2->secuencia;
+    direccionHoja2->secuencia = auxiliarCambios;
 
     //cout << "Base hoja 1: " << direccionHoja1->baseNitrogenada << " Base hoja 2: " << direccionHoja2->baseNitrogenada << endl;
 

@@ -22,51 +22,68 @@ NodoArbol::NodoArbol(){
 }
 
 
-NodoArbol::NodoArbol(char nuevaBaseNitrogenada, int nuevoID){
+NodoArbol::NodoArbol(char nuevaBaseNitrogenada, int nuevoID, int &posicionSecuenciaSeleccionada, vector<int> &posicionGenerada, vector<string> &secuencias){
     //Constructor de la clase.
     hijoIzquierdo = NULL;
     hijoDerecho = NULL;
     id = nuevoID;
 
-    for(int i = 0; i < 4; i++){
-        evaluacionesMutaciones.push_back(-1); //-1 = Infinito.
+    for(int i = 0; i < secuencias[0].size(); i++){
+        //cout << "Agregando un vector a las mutaciones..." << endl;
+        vector<int> auxNuevoVectorMutaciones;
+        evaluacionesMutaciones.push_back(auxNuevoVectorMutaciones);
+        //cout << "Vector agregando a las mutaciones." << endl;
+        for(int j = 0; j < 4; j++){
+            //cout << "Agregando -1 a vector agregado..." << endl;
+            evaluacionesMutaciones[i].push_back(-1); //-1 = Infinito.
+            //cout << "-1 agregado..." << endl;
+        }        
     }
+
+
     baseNitrogenada = nuevaBaseNitrogenada;
 
     if(nuevaBaseNitrogenada == 'N'){
         tipoNodo = 'I';
     }else{
         tipoNodo = 'H';
+        secuencia = secuencias[posicionGenerada[posicionSecuenciaSeleccionada]];
+        posicionSecuenciaSeleccionada++;
     }
 
     evaluarMutacionHoja();
 }
 
 void NodoArbol::evaluarMutacionHoja(){
+    //Restablece el valor de la tabla de mutaciones para un nodo hoja.
+
     if(tipoNodo == 'H'){
-        switch(baseNitrogenada){
-            case 'A':
-            case 'a':
-                evaluacionesMutaciones[PosicionBase::A] = 0;
-                break;
-            case 'T':
-            case 't':
-                evaluacionesMutaciones[PosicionBase::T] = 0;
-                break;
-            case 'G':
-            case 'g':
-                evaluacionesMutaciones[PosicionBase::G] = 0;
-                break;                            
-            case 'C':
-            case 'c':
-                evaluacionesMutaciones[PosicionBase::C] = 0;
-                break;                        
+        for(int i = 0; i < secuencia.size(); i++){
+            //
+            switch(secuencia.at(i)){
+                case 'A':
+                case 'a':
+                    evaluacionesMutaciones[i][PosicionBase::A] = 0;
+                    break;
+                case 'T':
+                case 't':
+                    evaluacionesMutaciones[i][PosicionBase::T] = 0;
+                    break;
+                case 'G':
+                case 'g':
+                    evaluacionesMutaciones[i][PosicionBase::G] = 0;
+                    break;                            
+                case 'C':
+                case 'c':
+                    evaluacionesMutaciones[i][PosicionBase::C] = 0;
+                    break;                        
+            }
         }
     }
 }
 
-void NodoArbol::evaluarMutaciones(){
-    //Implementación del algoritmo de Sankoff para evaluación de máxima parsimonia.
+void NodoArbol::evaluarMutaciones(int &sitioInformativo){
+    //Implementación del algoritmo de Sankoff para evaluación de máxima parsimonia. Recibe como parámetro un entero indicando el sitio informativo a evaluar.
 
     if(hijoIzquierdo == NULL){
         cout << "NodoArbol::evaluarMuraciones: Hijo izquierdo nulo" << endl;
@@ -77,13 +94,13 @@ void NodoArbol::evaluarMutaciones(){
     }
 
     //Comprobación de que un nodo izquierdo interno aún no ha sido evaluado.
-    if(hijoIzquierdo->tipoNodo == 'I' && hijoIzquierdo->evaluacionesMutaciones[0] == -1 && hijoIzquierdo != NULL){
-        hijoIzquierdo->evaluarMutaciones();
+    if(hijoIzquierdo->tipoNodo == 'I' && hijoIzquierdo->evaluacionesMutaciones[sitioInformativo][0] == -1 && hijoIzquierdo != NULL){
+        hijoIzquierdo->evaluarMutaciones(sitioInformativo);
     }
 
     //Comprobación de que un nodo izquierdo interno aún no ha sido evaluado.
-    if(hijoDerecho->tipoNodo == 'I' && hijoDerecho->evaluacionesMutaciones[0] == -1 && hijoDerecho != NULL){
-        hijoDerecho->evaluarMutaciones();
+    if(hijoDerecho->tipoNodo == 'I' && hijoDerecho->evaluacionesMutaciones[sitioInformativo][0] == -1 && hijoDerecho != NULL){
+        hijoDerecho->evaluarMutaciones(sitioInformativo);
     }            
 
     for(int i = 0; i < 4; i++){
@@ -92,23 +109,23 @@ void NodoArbol::evaluarMutaciones(){
         bool wMinEncontrado = false;
 
         for(int j = 0; j < 4; j++){
-            if(hijoIzquierdo->evaluacionesMutaciones[j] == -1){
+            if(hijoIzquierdo->evaluacionesMutaciones[sitioInformativo][j] == -1){
                 continue;
             }
-            if(hijoIzquierdo->evaluacionesMutaciones[j] + matrizValoresMutaciones[i][j] <= uMin){
+            if(hijoIzquierdo->evaluacionesMutaciones[sitioInformativo][j] + matrizValoresMutaciones[i][j] <= uMin){
                 //printf("%d %d \n.", hijoIzquierdo->evaluacionesMutaciones[j], matrizValoresMutaciones[i][j]);
-                uMin = hijoIzquierdo->evaluacionesMutaciones[j] + matrizValoresMutaciones[i][j];
+                uMin = hijoIzquierdo->evaluacionesMutaciones[sitioInformativo][j] + matrizValoresMutaciones[i][j];
                 uMinEncontrado = true;
             }
         }
 
         for(int j = 0; j < 4; j++){
-            if(hijoDerecho->evaluacionesMutaciones[j] == -1){                        
+            if(hijoDerecho->evaluacionesMutaciones[sitioInformativo][j] == -1){                        
                 continue;
             }
-            if(hijoDerecho->evaluacionesMutaciones[j] + matrizValoresMutaciones[i][j] <= wMin){
+            if(hijoDerecho->evaluacionesMutaciones[sitioInformativo][j] + matrizValoresMutaciones[i][j] <= wMin){
                 //printf("%d %d \n.", hijoDerecho->evaluacionesMutaciones[j], matrizValoresMutaciones[i][j]);
-                wMin = hijoDerecho->evaluacionesMutaciones[j] + matrizValoresMutaciones[i][j];
+                wMin = hijoDerecho->evaluacionesMutaciones[sitioInformativo][j] + matrizValoresMutaciones[i][j];
                 wMinEncontrado = true;
             }
         }
@@ -121,14 +138,15 @@ void NodoArbol::evaluarMutaciones(){
             wMin = 0;
         }
 
-        evaluacionesMutaciones[i] = uMin + wMin;
+        evaluacionesMutaciones[sitioInformativo][i] = uMin + wMin;
 
         
         //printf("Total: %d\n", evaluacionesMutaciones[i]);
     } 
 }
 
-void NodoArbol::generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrantes, int &id, int lado){
+void NodoArbol::generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrantes, int &id, int lado, 
+                            int &posicionSecuenciaSeleccionada, vector<int> &posicionGenerada, vector<string> &secuencias){
     //lado 0 = izquierdo, 1 = derecho
 
     int tempId = id;
@@ -152,7 +170,7 @@ void NodoArbol::generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrant
             baseAleatoria = 'C';
             break;                                    
         }
-        NodoArbol *auxNuevoHijo = new NodoArbol(baseAleatoria, tempId);
+        NodoArbol *auxNuevoHijo = new NodoArbol(baseAleatoria, tempId, posicionSecuenciaSeleccionada, posicionGenerada, secuencias);
         //-------------------------------------------------------------------------
         
         id++;
@@ -165,7 +183,7 @@ void NodoArbol::generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrant
         return;
     }
 
-    NodoArbol *auxNuevoHijo = new NodoArbol('N', tempId);
+    NodoArbol *auxNuevoHijo = new NodoArbol('N', tempId, posicionSecuenciaSeleccionada, posicionGenerada, secuencias);
     id++;
 
     if(tempId == 9 || tempId == 2){
@@ -178,8 +196,8 @@ void NodoArbol::generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrant
         hijoDerecho = auxNuevoHijo;
     }
 
-    auxNuevoHijo->generarHijo(alturaMaxima, nivelHijo+1, sobrantes, id, 1);
-    auxNuevoHijo->generarHijo(alturaMaxima, nivelHijo+1, sobrantes, id, 0);
+    auxNuevoHijo->generarHijo(alturaMaxima, nivelHijo+1, sobrantes, id, 1, posicionSecuenciaSeleccionada, posicionGenerada, secuencias);
+    auxNuevoHijo->generarHijo(alturaMaxima, nivelHijo+1, sobrantes, id, 0, posicionSecuenciaSeleccionada, posicionGenerada, secuencias);
         
 }
 
@@ -233,7 +251,7 @@ void NodoArbol::inorden(){
     }
 
     if(tipoNodo == 'H'){
-        cout << id << " " << baseNitrogenada << " ";    
+        cout << id << " " << secuencia << " ";    
     }else{
         cout << id << " ";
     }
@@ -271,10 +289,16 @@ void NodoArbol::limpiarEvaluacionesMutaciones(){
         hijoDerecho->limpiarEvaluacionesMutaciones();
     }
 
-    for(int i = 0; i < 4; i++){
-        //cout << "Antigua : " << evaluacionesMutaciones[i];
-        evaluacionesMutaciones[i] = -1; //-1 = Infinito.
-        //cout << "Nueva : " << evaluacionesMutaciones[i] << endl;
+    //cout << "\n" << tipoNodo << " : " << id << endl;
+
+    for(int i = 0; i < evaluacionesMutaciones.size(); i++){
+        //cout << "\nSitio " << i << endl;
+        for(int j = 0; j < 4; j++){
+            //cout << "Antigua : " << evaluacionesMutaciones[i][j];
+            evaluacionesMutaciones[i][j] = -1; //-1 = Infinito.
+            //cout << " Nueva : " << evaluacionesMutaciones[i][j] << endl;
+        }
+        //cout << "\n";
     }
 
     evaluarMutacionHoja();
