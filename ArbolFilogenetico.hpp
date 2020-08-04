@@ -11,6 +11,7 @@ class ArbolFilogenetico{
         string formatoNewick;
 
         ArbolFilogenetico(int numeroHojas, int &auxPosSecuencias, vector<int> &listaPosicionesGeneradas, vector<string> &secuencias, vector<string> &nombresSecuencias); //Genera un árbol binario inicial con el número indicado de hojas.
+        static void leerAlineamientoClustalW(vector<string> &nombreSecuencias, vector<string> &sitiosInformativos, string nombreArchivoEntrada);
         void obtenerParsimonia();
         void busquedaLocal(vector<NodoArbol*> &listaHojas);
         void perturbarSolucion(vector<vector<NodoArbol*>> &tablaNodosInteriores);

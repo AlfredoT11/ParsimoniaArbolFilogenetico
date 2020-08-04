@@ -2,8 +2,14 @@
 
 #include <iostream>
 #include <math.h>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
+
+enum PosicionBase { //Especifica la posición del posible valor de la mutación en el miembro "evaluacionesMutaciones" de la clase "Nodo_arbol".
+    A, T, G, C
+};
 
 ArbolFilogenetico::ArbolFilogenetico(int numeroHojas, int &auxPosSecuencias, vector<int> &listaPosicionesGeneradas, vector<string> &secuencias, vector<string> &nombresSecuencias){
     
@@ -22,14 +28,139 @@ ArbolFilogenetico::ArbolFilogenetico(int numeroHojas, int &auxPosSecuencias, vec
     cout << "HojasSobrantes: " << hojasSobrantes << endl;*/
 
     raiz = NodoArbol('N', 1, auxPosSecuencias, listaPosicionesGeneradas, secuencias, nombresSecuencias);
-    cout << "Raiz generada." << endl;
     int contador = 2;
     raiz.generarHijo(alturaMaxima, 2, hojasSobrantes, contador, 1, auxPosSecuencias, listaPosicionesGeneradas, secuencias, nombresSecuencias);
-    cout << "Hijos izquierdos generados" << endl;
     raiz.generarHijo(alturaMaxima, 2, hojasSobrantes, contador, 0, auxPosSecuencias, listaPosicionesGeneradas, secuencias, nombresSecuencias);
-    cout << "Hijos izquierdos generados" << endl;
     maximaParsimoniaPosible = -1;
 
+}
+
+void ArbolFilogenetico::leerAlineamientoClustalW(vector<string> &nombresSecuencias, vector<string> &sitiosInformativos, string nombreArchivoEntrada){
+//=============================================================================================================
+    //Leida de alineamiento en formato Clustal.
+    fstream archivoPruebaAlineamiento(nombreArchivoEntrada);
+    string lineaAuxiliar;
+    string auxInformacionAlineamiento;
+    int numeroLinea = 0;
+    int numeroSecuencias = 0;
+    int secuenciasContadas = 0;
+    vector<string> auxSecuenciasTemporales;
+
+    while(getline(archivoPruebaAlineamiento, lineaAuxiliar)){
+        
+        if(lineaAuxiliar.size() != 0 && numeroLinea != 0){
+            std::istringstream iss(lineaAuxiliar);
+            string nombre;
+            iss >> nombre;
+            numeroSecuencias++;
+            nombresSecuencias.push_back(nombre);
+        }else if(lineaAuxiliar.size() == 0 && numeroSecuencias > 0){
+            break;
+        }
+        numeroLinea++;
+        //cout << "size: " << lineaAuxiliar.size() << " Ultimo caracter: " << lineaAuxiliar[lineaAuxiliar.size() - 1] << endl;
+    }
+
+    numeroSecuencias--;
+    nombresSecuencias.pop_back();
+    cout << "Numero secuencias: " << numeroSecuencias << endl;
+
+    for(int i = 0; i < numeroSecuencias; i++){
+        sitiosInformativos.push_back("");
+    }
+
+    archivoPruebaAlineamiento.seekg (0, ios::beg);
+    numeroLinea = 0;
+    getline(archivoPruebaAlineamiento, lineaAuxiliar);
+    //cout << "Primera linea de nuevo: " << lineaAuxiliar << endl;
+
+    //cout << "Secuencias encontradas: " << endl;
+    for(int i = 0; i < nombresSecuencias.size(); i++){
+        cout << nombresSecuencias[i] << endl;
+    }
+
+    secuenciasContadas = 0;
+    int parte = 0;
+    string columnaAuxiliar;
+    vector<int> contadorBasesSitio = {0, 0, 0, 0};
+    int contadorCambiosNecesarios;
+
+    while(getline(archivoPruebaAlineamiento, lineaAuxiliar)){
+        if(lineaAuxiliar.size() != 0 && numeroLinea != 0){
+            if(secuenciasContadas == numeroSecuencias){
+                secuenciasContadas = 0;
+                auxInformacionAlineamiento = "";
+                auxInformacionAlineamiento = lineaAuxiliar.substr(lineaAuxiliar.size()-auxSecuenciasTemporales[0].size(), auxSecuenciasTemporales[0].size());
+                for(int i = 0; i < auxInformacionAlineamiento.size(); i++){
+                    columnaAuxiliar = "";
+
+                    if(auxInformacionAlineamiento[i] != '*'){
+                        for(int j = 0; j < numeroSecuencias; j++){
+                            if(auxSecuenciasTemporales[j][i] == 'N' || auxSecuenciasTemporales[j][i] == '-'){
+                                break;
+                            }
+                            columnaAuxiliar += auxSecuenciasTemporales[j][i];
+                        }
+                    }
+                    if(columnaAuxiliar.size() == numeroSecuencias){                        
+                        contadorCambiosNecesarios = 0;
+                        for(int i = 0; i < numeroSecuencias; i++){
+                            switch(columnaAuxiliar.at(i)){
+                                case 'A':
+                                case 'a':
+                                    contadorBasesSitio[PosicionBase::A]++;
+                                    break;
+                                case 'T':
+                                case 't':
+                                    contadorBasesSitio[PosicionBase::T]++;
+                                    break;
+                                case 'G':
+                                case 'g':
+                                    contadorBasesSitio[PosicionBase::G]++;
+                                    break;                            
+                                case 'C':
+                                case 'c':
+                                    contadorBasesSitio[PosicionBase::C]++;
+                                    break;                        
+                            }                            
+                        }
+                        for(int i = 0; i < 4; i++){
+                            if(contadorBasesSitio[i] >= 2){
+                                contadorCambiosNecesarios++;
+                            }
+                            contadorBasesSitio[i] = 0;
+                        }
+                        if(contadorCambiosNecesarios >= 2){
+                            //cout << "Sition informativo encontrado." << endl;
+                            //cout << columnaAuxiliar << endl;
+                            for(int i = 0; i < numeroSecuencias; i++){
+                                sitiosInformativos[i] += columnaAuxiliar[i];
+                            }
+                        }                                                
+                    }
+
+                }
+                vector<string>().swap(auxSecuenciasTemporales);
+                parte++;
+            }else{
+                std::istringstream iss(lineaAuxiliar);
+                string nombre, secuencia;
+                iss >> nombre >> secuencia;
+                secuenciasContadas++;
+                auxSecuenciasTemporales.push_back(secuencia);
+            }
+
+        }
+        numeroLinea++;
+        //cout << "size: " << lineaAuxiliar.size() << " Ultimo caracter: " << lineaAuxiliar[lineaAuxiliar.size() - 1] << endl;
+    }
+
+    /*for(int i = 0; i < numeroSecuencias; i++){
+        cout << sitiosInformativos[i] << endl;
+    }*/
+
+    //Sitios informativos filtrados
+    //===============================================================================================================    
 }
 
 void ArbolFilogenetico::obtenerParsimonia(){
@@ -67,7 +198,7 @@ void ArbolFilogenetico::obtenerParsimonia(){
             maximaParsimoniaPosible = auxMaximaParsimoniaTotal;
             formatoNewick = "";
             raiz.construirFormatoNewick(formatoNewick);
-            cout << "\nNuevo mínimo encontrado." << endl;
+            //cout << "\nNuevo mínimo encontrado." << endl;
         }    
     }
 }
