@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>  
 #include <time.h>
 #include <algorithm>    // std::random_shuffle
 
@@ -238,18 +239,149 @@ int main(){
     archivoNewick.close();
     ------------------------------------------------------------------------------------------------------------------ */
 
+    //=============================================================================================================
+    //Leida de alineamiento en formato Clustal.
+    fstream archivoPruebaAlineamiento("alineamiento11secuencias.clw");
+    string lineaAuxiliar;
+    string auxInformacionAlineamiento;
+    int numeroLinea = 0;
+    int numeroSecuencias = 0;
+    int secuenciasContadas = 0;
+    vector<string> nombresSecuencias;
+    vector<string> sitiosInformativos;
+    vector<string> auxSecuenciasTemporales;
+
+    while(getline(archivoPruebaAlineamiento, lineaAuxiliar)){
+        
+        if(lineaAuxiliar.size() != 0 && numeroLinea != 0){
+            std::istringstream iss(lineaAuxiliar);
+            string nombre;
+            iss >> nombre;
+            numeroSecuencias++;
+            nombresSecuencias.push_back(nombre);
+        }else if(lineaAuxiliar.size() == 0 && numeroSecuencias > 0){
+            break;
+        }
+        numeroLinea++;
+        //cout << "size: " << lineaAuxiliar.size() << " Ultimo caracter: " << lineaAuxiliar[lineaAuxiliar.size() - 1] << endl;
+    }
+
+    numeroSecuencias--;
+    nombresSecuencias.pop_back();
+    cout << "Numero secuencias: " << numeroSecuencias << endl;
+
+    for(int i = 0; i < numeroSecuencias; i++){
+        sitiosInformativos.push_back("");
+    }
+
+    archivoPruebaAlineamiento.seekg (0, ios::beg);
+    numeroLinea = 0;
+    getline(archivoPruebaAlineamiento, lineaAuxiliar);
+    //cout << "Primera linea de nuevo: " << lineaAuxiliar << endl;
+
+    //cout << "Secuencias encontradas: " << endl;
+    for(int i = 0; i < nombresSecuencias.size(); i++){
+        cout << nombresSecuencias[i] << endl;
+    }
+
+    secuenciasContadas = 0;
+    int parte = 0;
+    string columnaAuxiliar;
+    vector<int> contadorBasesSitio = {0, 0, 0, 0};
+    int contadorCambiosNecesarios;
+
+    while(getline(archivoPruebaAlineamiento, lineaAuxiliar)){
+        if(lineaAuxiliar.size() != 0 && numeroLinea != 0){
+            if(secuenciasContadas == numeroSecuencias){
+                secuenciasContadas = 0;
+                auxInformacionAlineamiento = "";
+                auxInformacionAlineamiento = lineaAuxiliar.substr(lineaAuxiliar.size()-auxSecuenciasTemporales[0].size(), auxSecuenciasTemporales[0].size());
+                for(int i = 0; i < auxInformacionAlineamiento.size(); i++){
+                    columnaAuxiliar = "";
+
+                    if(auxInformacionAlineamiento[i] != '*'){
+                        for(int j = 0; j < numeroSecuencias; j++){
+                            if(auxSecuenciasTemporales[j][i] == 'N' || auxSecuenciasTemporales[j][i] == '-'){
+                                break;
+                            }
+                            columnaAuxiliar += auxSecuenciasTemporales[j][i];
+                        }
+                    }
+                    if(columnaAuxiliar.size() == numeroSecuencias){                        
+                        contadorCambiosNecesarios = 0;
+                        for(int i = 0; i < numeroSecuencias; i++){
+                            switch(columnaAuxiliar.at(i)){
+                                case 'A':
+                                case 'a':
+                                    contadorBasesSitio[PosicionBase::A]++;
+                                    break;
+                                case 'T':
+                                case 't':
+                                    contadorBasesSitio[PosicionBase::T]++;
+                                    break;
+                                case 'G':
+                                case 'g':
+                                    contadorBasesSitio[PosicionBase::G]++;
+                                    break;                            
+                                case 'C':
+                                case 'c':
+                                    contadorBasesSitio[PosicionBase::C]++;
+                                    break;                        
+                            }                            
+                        }
+                        for(int i = 0; i < 4; i++){
+                            if(contadorBasesSitio[i] >= 2){
+                                contadorCambiosNecesarios++;
+                            }
+                            contadorBasesSitio[i] = 0;
+                        }
+                        if(contadorCambiosNecesarios >= 2){
+                            //cout << "Sition informativo encontrado." << endl;
+                            //cout << columnaAuxiliar << endl;
+                            for(int i = 0; i < numeroSecuencias; i++){
+                                sitiosInformativos[i] += columnaAuxiliar[i];
+                            }
+                        }                                                
+                    }
+
+                }
+                vector<string>().swap(auxSecuenciasTemporales);
+                parte++;
+            }else{
+                std::istringstream iss(lineaAuxiliar);
+                string nombre, secuencia;
+                iss >> nombre >> secuencia;
+                secuenciasContadas++;
+                auxSecuenciasTemporales.push_back(secuencia);
+            }
+
+        }
+        numeroLinea++;
+        //cout << "size: " << lineaAuxiliar.size() << " Ultimo caracter: " << lineaAuxiliar[lineaAuxiliar.size() - 1] << endl;
+    }
+
+    /*for(int i = 0; i < numeroSecuencias; i++){
+        cout << sitiosInformativos[i] << endl;
+    }*/
+
+    //Sitios informativos filtrados
+    //===============================================================================================================
+
+
+    //-----------------------------------------------------------------------------------------------------------------
+    //Ejemplo del algoritmo en funcionamiento con 20 cadenas de prueba
     cout << "Cadenas de prueba: " << endl;
     vector<int> listaElementosPrueba;
-    for(int i = 0; i < 20; i++){
+    for(int i = 0; i < numeroSecuencias; i++){
         listaElementosPrueba.push_back(i);
-        cout << i << " : " << cadenasPrueba[i] << " ";
+        cout << i << " : " << sitiosInformativos[i] << " ";
     }
 
     std::random_shuffle(listaElementosPrueba.begin(), listaElementosPrueba.end());
 
     cout << "\nLista mezclada: "<< endl;
-    for(int i = 0; i < 20; i++){
-        cout << listaElementosPrueba[i] << " : " << cadenasPrueba[listaElementosPrueba[i]] << " ";
+    for(int i = 0; i < numeroSecuencias; i++){
+        cout << listaElementosPrueba[i] << " : " << sitiosInformativos[listaElementosPrueba[i]] << " ";
     }
     cout << endl;
 
@@ -272,7 +404,7 @@ int main(){
     //cin >> perturbaciones;
 
     //Se genera el árbol inicial.
-    ArbolFilogenetico arbolPrueba = ArbolFilogenetico(numHojas, auxPosSecuencias, listaElementosPrueba, cadenasPrueba);
+    ArbolFilogenetico arbolPrueba = ArbolFilogenetico(numHojas, auxPosSecuencias, listaElementosPrueba, sitiosInformativos);
 
     cout << "\nArbol generado." << endl;
 
@@ -322,6 +454,10 @@ int main(){
     archivoNewick.open("prueba.newick");
     archivoNewick << arbolPrueba.formatoNewick << ";";
     archivoNewick.close();    
+    //Fin del ejemplo del algoritmo con 20 cadenas de pruebas.
+    // ============================================================================================================
+
+    cout << "Terminado." << endl;
 
     return 0;
 }

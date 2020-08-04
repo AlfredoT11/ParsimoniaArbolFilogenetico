@@ -36,3 +36,4 @@
 .vscode
 tests.cpp
 *.newick
+*.clw
