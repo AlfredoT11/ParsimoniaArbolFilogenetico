@@ -11,13 +11,17 @@ enum PosicionBase { //Especifica la posición del posible valor de la mutación 
     A, T, G, C
 };
 
+
+
+
 ArbolFilogenetico::ArbolFilogenetico(int numeroHojas, int &auxPosSecuencias, vector<int> &listaPosicionesGeneradas, vector<string> &secuencias, vector<string> &nombresSecuencias){
-    
+
+    char aAcento = 160;    
     /*cout << "Logaritmo: " << log2(numeroHojas) << endl;
     cout << "Ceil: " << ceil(log2(numeroHojas)) << endl;
     cout << "Entero: " << int(ceil(log2(numeroHojas))) << endl;*/
 
-    cout << "Generando arbol..." << endl;
+    cout << "Generando "<< aAcento << "rbol..." << endl;
 
     int alturaMaxima = int(ceil(log2(numeroHojas)));
 
@@ -45,6 +49,7 @@ void ArbolFilogenetico::leerAlineamientoClustalW(vector<string> &nombresSecuenci
     int numeroSecuencias = 0;
     int secuenciasContadas = 0;
     vector<string> auxSecuenciasTemporales;
+    char uAcento = 163;
 
     while(getline(archivoPruebaAlineamiento, lineaAuxiliar)){
         
@@ -63,7 +68,7 @@ void ArbolFilogenetico::leerAlineamientoClustalW(vector<string> &nombresSecuenci
 
     numeroSecuencias--;
     nombresSecuencias.pop_back();
-    cout << "Numero secuencias: " << numeroSecuencias << endl;
+    cout << "N" << uAcento <<"mero secuencias: " << numeroSecuencias << endl;
 
     for(int i = 0; i < numeroSecuencias; i++){
         sitiosInformativos.push_back("");

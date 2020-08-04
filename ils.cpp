@@ -14,6 +14,11 @@ enum PosicionBase { //Especifica la posición del posible valor de la mutación 
     A, T, G, C
 };
 
+char aAcento = 160;
+char AAcento = 181;
+char uAcento = 163;
+char eAcento = 130;
+
 string ils(string nombreArchivoAlineamiento, string nombreArchivoSalida){
 
     vector<string> nombresSecuencias;
@@ -39,15 +44,18 @@ string ils(string nombreArchivoAlineamiento, string nombreArchivoSalida){
 
     numHojas = numeroSecuencias;
 
-    cout << "Numero de busquedas locales: ";
+    cout << "N"<< uAcento <<"mero de b" << uAcento << "squedas locales: ";
     cin >> busquedasLocales;
-    cout << "Numero de perturbaciones: ";
+    if(busquedasLocales < 0){
+        cout << "El n" << uAcento << "mero de busquedas locales debe ser mayor a 0." << endl;
+        return "-1";
+    }
+    cout << "N" << uAcento << "mero de perturbaciones: ";
     cin >> perturbaciones;
-
-    //cout << "Numero de busquedas locales: ";
-    //cin >> busquedasLocales;
-    //cout << "Numero de perturbaciones: ";
-    //cin >> perturbaciones;
+    if(perturbaciones < 0){
+        cout << "El n" << uAcento <<"mero perturbaciones debe ser mayor a 0." << endl;
+        return "-1";
+    }
 
     //Se genera el árbol inicial.
     ArbolFilogenetico arbol = ArbolFilogenetico(numHojas, auxPosSecuencias, listaElementosMezclados, sitiosInformativos, nombresSecuencias);
@@ -93,8 +101,8 @@ string ils(string nombreArchivoAlineamiento, string nombreArchivoSalida){
 
     }
 
-    cout << "\nMaxima parsimonia final: " << arbol.maximaParsimoniaPosible << endl;
-    cout << "Arbol final: " << arbol.formatoNewick << endl;
+    cout << "\nM"<< aAcento <<"xima parsimonia final: " << arbol.maximaParsimoniaPosible << endl;
+    cout << AAcento << "rbol final: " << arbol.formatoNewick << endl;
 
     ofstream archivoNewick;
     archivoNewick.open(nombreArchivoSalida);
@@ -107,13 +115,11 @@ string ils(string nombreArchivoAlineamiento, string nombreArchivoSalida){
 
 int main(int argc, char **argv){
 
-    cout << "Numero argumentos: " << argc << endl;
-
     string nombreArchivoAlineamiento;
     string nombreArchivoSalida;
 
     if(argc < 2){
-        cout << "Por favor ingresa al menos nombre del alineamiento (Formato ClustalW). Puedes ingresar tambien el nombre del archivo de salida (Formato Newick)" << endl;
+        cout << "Por favor ingresa al menos nombre del alineamiento (Formato ClustalW). Puedes ingresar tambi" << eAcento << "n el nombre del archivo de salida (Formato Newick)" << endl;
         return 0;
     }else if(argc == 2){
         nombreArchivoAlineamiento = argv[1];
@@ -122,13 +128,15 @@ int main(int argc, char **argv){
         nombreArchivoAlineamiento = argv[1];
         nombreArchivoSalida = argv[2];        
     }else{
-        cout << "Por favor unicamente ingresa el nombre del alineamiento (Formato ClustalW). Puedes ingresar tambien el nombre del archivo de salida (Formato Newick)" << endl;
+        cout << "Por favor ingresa " << uAcento << "nicamente el nombre del alineamiento (Formato ClustalW). Puedes ingresar tambie" << eAcento << "n el nombre del archivo de salida (Formato Newick)" << endl;
         return 0;
     }
 
     srand((unsigned)time(NULL));
 
-    ils(nombreArchivoAlineamiento, nombreArchivoSalida);
+    if(ils(nombreArchivoAlineamiento, nombreArchivoSalida) == ("-1")){
+        cout << "Error" << endl;
+    };
 
     cout << "Terminado." << endl;
 
