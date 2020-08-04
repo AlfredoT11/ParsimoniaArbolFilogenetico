@@ -404,7 +404,7 @@ int main(){
     //cin >> perturbaciones;
 
     //Se genera el árbol inicial.
-    ArbolFilogenetico arbolPrueba = ArbolFilogenetico(numHojas, auxPosSecuencias, listaElementosPrueba, sitiosInformativos);
+    ArbolFilogenetico arbolPrueba = ArbolFilogenetico(numHojas, auxPosSecuencias, listaElementosPrueba, sitiosInformativos, nombresSecuencias);
 
     cout << "\nArbol generado." << endl;
 

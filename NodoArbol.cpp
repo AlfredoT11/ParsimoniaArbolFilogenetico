@@ -22,7 +22,7 @@ NodoArbol::NodoArbol(){
 }
 
 
-NodoArbol::NodoArbol(char nuevaBaseNitrogenada, int nuevoID, int &posicionSecuenciaSeleccionada, vector<int> &posicionGenerada, vector<string> &secuencias){
+NodoArbol::NodoArbol(char nuevaBaseNitrogenada, int nuevoID, int &posicionSecuenciaSeleccionada, vector<int> &posicionGenerada, vector<string> &secuencias, vector<string> &nombresSecuencias){
     //Constructor de la clase.
     hijoIzquierdo = NULL;
     hijoDerecho = NULL;
@@ -48,6 +48,7 @@ NodoArbol::NodoArbol(char nuevaBaseNitrogenada, int nuevoID, int &posicionSecuen
     }else{
         tipoNodo = 'H';
         secuencia = secuencias[posicionGenerada[posicionSecuenciaSeleccionada]];
+        nombreSecuencia = nombresSecuencias[posicionGenerada[posicionSecuenciaSeleccionada]];
         posicionSecuenciaSeleccionada++;
     }
 
@@ -146,7 +147,7 @@ void NodoArbol::evaluarMutaciones(int &sitioInformativo){
 }
 
 void NodoArbol::generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrantes, int &id, int lado, 
-                            int &posicionSecuenciaSeleccionada, vector<int> &posicionGenerada, vector<string> &secuencias){
+                            int &posicionSecuenciaSeleccionada, vector<int> &posicionGenerada, vector<string> &secuencias, vector<string> &nombresSecuencias){
     //lado 0 = izquierdo, 1 = derecho
 
     int tempId = id;
@@ -170,7 +171,7 @@ void NodoArbol::generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrant
             baseAleatoria = 'C';
             break;                                    
         }
-        NodoArbol *auxNuevoHijo = new NodoArbol(baseAleatoria, tempId, posicionSecuenciaSeleccionada, posicionGenerada, secuencias);
+        NodoArbol *auxNuevoHijo = new NodoArbol(baseAleatoria, tempId, posicionSecuenciaSeleccionada, posicionGenerada, secuencias, nombresSecuencias);
         //-------------------------------------------------------------------------
         
         id++;
@@ -183,7 +184,7 @@ void NodoArbol::generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrant
         return;
     }
 
-    NodoArbol *auxNuevoHijo = new NodoArbol('N', tempId, posicionSecuenciaSeleccionada, posicionGenerada, secuencias);
+    NodoArbol *auxNuevoHijo = new NodoArbol('N', tempId, posicionSecuenciaSeleccionada, posicionGenerada, secuencias, nombresSecuencias);
     id++;
 
     if(tempId == 9 || tempId == 2){
@@ -196,8 +197,8 @@ void NodoArbol::generarHijo(const int &alturaMaxima, int nivelHijo, int &sobrant
         hijoDerecho = auxNuevoHijo;
     }
 
-    auxNuevoHijo->generarHijo(alturaMaxima, nivelHijo+1, sobrantes, id, 1, posicionSecuenciaSeleccionada, posicionGenerada, secuencias);
-    auxNuevoHijo->generarHijo(alturaMaxima, nivelHijo+1, sobrantes, id, 0, posicionSecuenciaSeleccionada, posicionGenerada, secuencias);
+    auxNuevoHijo->generarHijo(alturaMaxima, nivelHijo+1, sobrantes, id, 1, posicionSecuenciaSeleccionada, posicionGenerada, secuencias, nombresSecuencias);
+    auxNuevoHijo->generarHijo(alturaMaxima, nivelHijo+1, sobrantes, id, 0, posicionSecuenciaSeleccionada, posicionGenerada, secuencias, nombresSecuencias);
         
 }
 
@@ -349,7 +350,7 @@ void NodoArbol::construirFormatoNewick(string &cadenaNewick){
         return;        
     }else{
         //cout << "ID: " << id << endl;
-        cadenaNewick.append(to_string(id));
+        cadenaNewick.append(nombreSecuencia);
         return;
     }
 

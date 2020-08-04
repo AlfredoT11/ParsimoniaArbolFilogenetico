@@ -5,7 +5,7 @@
 
 using namespace std;
 
-ArbolFilogenetico::ArbolFilogenetico(int numeroHojas, int &auxPosSecuencias, vector<int> &listaPosicionesGeneradas, vector<string> &secuencias){
+ArbolFilogenetico::ArbolFilogenetico(int numeroHojas, int &auxPosSecuencias, vector<int> &listaPosicionesGeneradas, vector<string> &secuencias, vector<string> &nombresSecuencias){
     
     /*cout << "Logaritmo: " << log2(numeroHojas) << endl;
     cout << "Ceil: " << ceil(log2(numeroHojas)) << endl;
@@ -21,12 +21,12 @@ ArbolFilogenetico::ArbolFilogenetico(int numeroHojas, int &auxPosSecuencias, vec
     cout << "NumeroHojas: " << numeroHojas << endl;
     cout << "HojasSobrantes: " << hojasSobrantes << endl;*/
 
-    raiz = NodoArbol('N', 1, auxPosSecuencias, listaPosicionesGeneradas, secuencias);
+    raiz = NodoArbol('N', 1, auxPosSecuencias, listaPosicionesGeneradas, secuencias, nombresSecuencias);
     cout << "Raiz generada." << endl;
     int contador = 2;
-    raiz.generarHijo(alturaMaxima, 2, hojasSobrantes, contador, 1, auxPosSecuencias, listaPosicionesGeneradas, secuencias);
+    raiz.generarHijo(alturaMaxima, 2, hojasSobrantes, contador, 1, auxPosSecuencias, listaPosicionesGeneradas, secuencias, nombresSecuencias);
     cout << "Hijos izquierdos generados" << endl;
-    raiz.generarHijo(alturaMaxima, 2, hojasSobrantes, contador, 0, auxPosSecuencias, listaPosicionesGeneradas, secuencias);
+    raiz.generarHijo(alturaMaxima, 2, hojasSobrantes, contador, 0, auxPosSecuencias, listaPosicionesGeneradas, secuencias, nombresSecuencias);
     cout << "Hijos izquierdos generados" << endl;
     maximaParsimoniaPosible = -1;
 
@@ -93,6 +93,7 @@ void ArbolFilogenetico::busquedaLocal(vector<NodoArbol*> &listaHojas){
     NodoArbol* direccionHoja2;
 
     string auxiliarCambios;
+    string auxiliarNombreSecuencia;
 
     int posHoja1 = rand() % listaHojas.size();
     int posHoja2;
@@ -115,6 +116,10 @@ void ArbolFilogenetico::busquedaLocal(vector<NodoArbol*> &listaHojas){
     auxiliarCambios = direccionHoja1->secuencia;
     direccionHoja1->secuencia = direccionHoja2->secuencia;
     direccionHoja2->secuencia = auxiliarCambios;
+    
+    auxiliarNombreSecuencia = direccionHoja1->nombreSecuencia;
+    direccionHoja1->nombreSecuencia = direccionHoja2->nombreSecuencia;
+    direccionHoja2->nombreSecuencia = auxiliarNombreSecuencia;    
 
     //cout << "Base hoja 1: " << direccionHoja1->baseNitrogenada << " Base hoja 2: " << direccionHoja2->baseNitrogenada << endl;
 

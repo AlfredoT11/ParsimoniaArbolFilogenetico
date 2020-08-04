@@ -10,7 +10,7 @@ class ArbolFilogenetico{
         int maximaParsimoniaPosible;
         string formatoNewick;
 
-        ArbolFilogenetico(int numeroHojas, int &auxPosSecuencias, vector<int> &listaPosicionesGeneradas, vector<string> &secuencias); //Genera un árbol binario inicial con el número indicado de hojas.
+        ArbolFilogenetico(int numeroHojas, int &auxPosSecuencias, vector<int> &listaPosicionesGeneradas, vector<string> &secuencias, vector<string> &nombresSecuencias); //Genera un árbol binario inicial con el número indicado de hojas.
         void obtenerParsimonia();
         void busquedaLocal(vector<NodoArbol*> &listaHojas);
         void perturbarSolucion(vector<vector<NodoArbol*>> &tablaNodosInteriores);
