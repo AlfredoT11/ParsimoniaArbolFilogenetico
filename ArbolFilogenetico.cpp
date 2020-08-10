@@ -4,6 +4,7 @@
 #include <math.h>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -49,6 +50,7 @@ void ArbolFilogenetico::leerAlineamientoClustalW(vector<string> &nombresSecuenci
     int numeroSecuencias = 0;
     int secuenciasContadas = 0;
     vector<string> auxSecuenciasTemporales;
+    vector<string> sitiosInformativosCompletos;
     char uAcento = 163;
 
     while(getline(archivoPruebaAlineamiento, lineaAuxiliar)){
@@ -71,7 +73,7 @@ void ArbolFilogenetico::leerAlineamientoClustalW(vector<string> &nombresSecuenci
     cout << "N" << uAcento <<"mero secuencias: " << numeroSecuencias << endl;
 
     for(int i = 0; i < numeroSecuencias; i++){
-        sitiosInformativos.push_back("");
+        sitiosInformativosCompletos.push_back("");
     }
 
     archivoPruebaAlineamiento.seekg (0, ios::beg);
@@ -101,7 +103,8 @@ void ArbolFilogenetico::leerAlineamientoClustalW(vector<string> &nombresSecuenci
 
                     if(auxInformacionAlineamiento[i] != '*'){
                         for(int j = 0; j < numeroSecuencias; j++){
-                            if(auxSecuenciasTemporales[j][i] == 'N' || auxSecuenciasTemporales[j][i] == '-'){
+                            if(auxSecuenciasTemporales[j][i] != 'A' && auxSecuenciasTemporales[j][i] != 'a' && auxSecuenciasTemporales[j][i] != 'T' && auxSecuenciasTemporales[j][i] != 't' &&
+                                auxSecuenciasTemporales[j][i] != 'G' && auxSecuenciasTemporales[j][i] != 'g' && auxSecuenciasTemporales[j][i] != 'C' && auxSecuenciasTemporales[j][i] != 'c'){
                                 break;
                             }
                             columnaAuxiliar += auxSecuenciasTemporales[j][i];
@@ -139,7 +142,7 @@ void ArbolFilogenetico::leerAlineamientoClustalW(vector<string> &nombresSecuenci
                             //cout << "Sition informativo encontrado." << endl;
                             //cout << columnaAuxiliar << endl;
                             for(int i = 0; i < numeroSecuencias; i++){
-                                sitiosInformativos[i] += columnaAuxiliar[i];
+                                sitiosInformativosCompletos[i] += columnaAuxiliar[i];
                             }
                         }                                                
                     }
@@ -160,15 +163,57 @@ void ArbolFilogenetico::leerAlineamientoClustalW(vector<string> &nombresSecuenci
         //cout << "size: " << lineaAuxiliar.size() << " Ultimo caracter: " << lineaAuxiliar[lineaAuxiliar.size() - 1] << endl;
     }
 
+    archivoPruebaAlineamiento.close();
+
     /*for(int i = 0; i < numeroSecuencias; i++){
         cout << sitiosInformativos[i] << endl;
     }*/
 
     //Sitios informativos filtrados
+    filtrarSitiosRepetidos(sitiosInformativosCompletos, sitiosInformativos);
     //===============================================================================================================    
 }
 
-void ArbolFilogenetico::obtenerParsimonia(){
+void ArbolFilogenetico::filtrarSitiosRepetidos(vector<string> &sitiosInformativosCompletos, vector<string> &sitiosInformativosFiltrados){
+
+    vector<string> sitiosVolteados;
+    vector<string> sitiosVolteadosFiltrados;
+
+    for(int i = 0; i < sitiosInformativosCompletos[0].size(); i++){
+        sitiosVolteados.push_back("");
+        for(int j = 0; j < sitiosInformativosCompletos.size(); j++){
+            sitiosVolteados[i].push_back(sitiosInformativosCompletos[j][i]);
+        }
+    }
+
+    sort(sitiosVolteados.begin(), sitiosVolteados.end());
+    
+    for(int i = 0; i < sitiosVolteados.size(); i++){
+        bool encontrado = false;
+        for(int j = 0; j < sitiosVolteadosFiltrados.size(); j++){
+            if(sitiosVolteados[i] == sitiosVolteadosFiltrados[j]){
+                encontrado = true;
+                break;
+            }
+        }
+        if(!encontrado){
+            sitiosVolteadosFiltrados.push_back(sitiosVolteados[i]);
+        }
+    }
+
+    
+    for(int i = 0; i < sitiosVolteadosFiltrados[0].size(); i++){
+        sitiosInformativosFiltrados.push_back("");
+        for(int j = 0; j < sitiosVolteadosFiltrados.size(); j++){
+            sitiosInformativosFiltrados[i].push_back(sitiosVolteadosFiltrados[j][i]);
+        }
+    }  
+
+    cout << "Registros: " << sitiosInformativosFiltrados.size() << " de tamanio: " << sitiosInformativosFiltrados[0].size() << endl;
+
+}
+
+int ArbolFilogenetico::obtenerParsimonia(NodoArbol &hojaIntercambiada1, NodoArbol &hojaIntercambiada2, int busquedasLocalesMaximas, int &numBusquedasLocalesRealizadas){
     
     if(maximaParsimoniaPosible == -1){
         
@@ -203,12 +248,46 @@ void ArbolFilogenetico::obtenerParsimonia(){
             maximaParsimoniaPosible = auxMaximaParsimoniaTotal;
             formatoNewick = "";
             raiz.construirFormatoNewick(formatoNewick);
-            //cout << "\nNuevo mínimo encontrado." << endl;
-        }    
+            cout << "Nuevo mínimo encontrado." << endl;
+            numBusquedasLocalesRealizadas = 0;
+        }else{            
+            intercambiarValoresHojas(hojaIntercambiada1, hojaIntercambiada2);
+            numBusquedasLocalesRealizadas++;
+        }
     }
+
+    if(numBusquedasLocalesRealizadas == busquedasLocalesMaximas){
+        return 1;
+    }else{
+        return 0;
+    }
+
 }
 
-void ArbolFilogenetico::busquedaLocal(vector<NodoArbol*> &listaHojas){
+void ArbolFilogenetico::intercambiarValoresHojas(NodoArbol &direccionHoja1, NodoArbol &direccionHoja2){
+
+    string auxiliarCambios;
+    string auxiliarNombreSecuencia;
+
+    direccionHoja1.baseNitrogenada = direccionHoja1.baseNitrogenada ^ direccionHoja2.baseNitrogenada;
+    direccionHoja2.baseNitrogenada = direccionHoja1.baseNitrogenada ^ direccionHoja2.baseNitrogenada;
+    direccionHoja1.baseNitrogenada = direccionHoja1.baseNitrogenada ^ direccionHoja2.baseNitrogenada;    
+
+    auxiliarCambios = direccionHoja1.secuencia;
+    direccionHoja1.secuencia = direccionHoja2.secuencia;
+    direccionHoja2.secuencia = auxiliarCambios;
+
+    auxiliarNombreSecuencia = direccionHoja1.nombreSecuencia;
+    direccionHoja1.nombreSecuencia = direccionHoja2.nombreSecuencia;
+    direccionHoja2.nombreSecuencia = auxiliarNombreSecuencia;    
+
+    direccionHoja1.evaluarMutacionHoja();
+    direccionHoja2.evaluarMutacionHoja();
+
+
+}
+
+void ArbolFilogenetico::busquedaLocal(vector<NodoArbol*> &listaHojas, int &posicionHoja1, int &posicionHoja2){
     //Intercambia 2 hojas al azar.
 
     /*cout << "\nAnteriores: ";
@@ -228,9 +307,6 @@ void ArbolFilogenetico::busquedaLocal(vector<NodoArbol*> &listaHojas){
     NodoArbol* direccionHoja1;
     NodoArbol* direccionHoja2;
 
-    string auxiliarCambios;
-    string auxiliarNombreSecuencia;
-
     int posHoja1 = rand() % listaHojas.size();
     int posHoja2;
     do{
@@ -241,26 +317,11 @@ void ArbolFilogenetico::busquedaLocal(vector<NodoArbol*> &listaHojas){
     direccionHoja1 = listaHojas[posHoja1];
     direccionHoja2 = listaHojas[posHoja2];
 
-    //cout << "\nBase hoja 1: " << direccionHoja1->baseNitrogenada << " Base hoja 2: " << direccionHoja2->baseNitrogenada << endl;
+    posicionHoja1 = posHoja1;
+    posicionHoja2 = posHoja2;
 
     //Se intercambian las bases entre los nodos seleccionados.
-
-    direccionHoja1->baseNitrogenada = direccionHoja1->baseNitrogenada ^ direccionHoja2->baseNitrogenada;
-    direccionHoja2->baseNitrogenada = direccionHoja1->baseNitrogenada ^ direccionHoja2->baseNitrogenada;
-    direccionHoja1->baseNitrogenada = direccionHoja1->baseNitrogenada ^ direccionHoja2->baseNitrogenada;    
-
-    auxiliarCambios = direccionHoja1->secuencia;
-    direccionHoja1->secuencia = direccionHoja2->secuencia;
-    direccionHoja2->secuencia = auxiliarCambios;
-    
-    auxiliarNombreSecuencia = direccionHoja1->nombreSecuencia;
-    direccionHoja1->nombreSecuencia = direccionHoja2->nombreSecuencia;
-    direccionHoja2->nombreSecuencia = auxiliarNombreSecuencia;    
-
-    //cout << "Base hoja 1: " << direccionHoja1->baseNitrogenada << " Base hoja 2: " << direccionHoja2->baseNitrogenada << endl;
-
-    direccionHoja1->evaluarMutacionHoja();
-    direccionHoja2->evaluarMutacionHoja();
+    intercambiarValoresHojas(*direccionHoja1, *direccionHoja2);
 
 }
 

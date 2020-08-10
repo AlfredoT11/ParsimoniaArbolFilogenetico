@@ -6,6 +6,7 @@
 #include <sstream>  
 #include <time.h>
 #include <algorithm>    // std::random_shuffle
+#include <math.h>
 
 
 using namespace std;
@@ -24,10 +25,11 @@ string ils(string nombreArchivoAlineamiento, string nombreArchivoSalida){
     vector<string> nombresSecuencias;
     vector<string> sitiosInformativos;
 
+    int pruebasLocalesMaximas, pruebasLocalesRealizadas;
+
     ArbolFilogenetico::leerAlineamientoClustalW(nombresSecuencias, sitiosInformativos, nombreArchivoAlineamiento);
     int numeroSecuencias = nombresSecuencias.size();
 
-    //-----------------------------------------------------------------------------------------------------------------
     vector<int> listaElementosMezclados;
     for(int i = 0; i < numeroSecuencias; i++){
         listaElementosMezclados.push_back(i);
@@ -57,6 +59,10 @@ string ils(string nombreArchivoAlineamiento, string nombreArchivoSalida){
         return "-1";
     }
 
+    pruebasLocalesMaximas = ceil(busquedasLocales*0.25);
+    cout << "Busquedas maximas: " << pruebasLocalesMaximas << endl;
+
+
     //Se genera el árbol inicial.
     ArbolFilogenetico arbol = ArbolFilogenetico(numHojas, auxPosSecuencias, listaElementosMezclados, sitiosInformativos, nombresSecuencias);
 
@@ -64,6 +70,9 @@ string ils(string nombreArchivoAlineamiento, string nombreArchivoSalida){
 
     arbol.raiz.ordenar(id);
     //arbolPrueba.raiz.inorden();
+
+    cout << "Numero de sitios informativos: " << sitiosInformativos[0].size() << endl;
+
     
     //Se evalúa el árbol inicial.
     for(int i = 0; i < arbol.raiz.evaluacionesMutaciones.size(); i++){
@@ -72,25 +81,33 @@ string ils(string nombreArchivoAlineamiento, string nombreArchivoSalida){
     }
 
     //Se obtiene la parsimonia del árbol y se obtiene el formato newick inicial.
-    arbol.obtenerParsimonia();
+    arbol.obtenerParsimonia(arbol.raiz, arbol.raiz, pruebasLocalesMaximas, pruebasLocalesRealizadas);
 
     //cout << "Parsimonia máxima inicial: " << arbolPrueba.maximaParsimoniaPosible << endl;
     //cout << "Newick: " << arbolPrueba.formatoNewick << endl;
 
     //Se comienza con la búsqueda local y las perturbaciones.
 
+    NodoArbol *hojaIntercambiada1, *hojaIntercambiada2;
+    int hojaSeleccionada1, hojaSeleccionada2;
+
     for(int i = 0; i < perturbaciones; i++){
         vector<vector<NodoArbol*>>().swap(tablaNodosInternos);
         vector<NodoArbol*>().swap(listaHojas);
         arbol.raiz.generarTablaNivelesNodosHijos(tablaNodosInternos, listaHojas, &arbol.raiz, 1);
+        pruebasLocalesRealizadas = 0;
         for(int j = 0; j < busquedasLocales; j++){
-            //cout << "Busqueda local..." << endl;            
-            arbol.busquedaLocal(listaHojas);
+            //cout << "Iteracion: " << j << endl;
+            arbol.busquedaLocal(listaHojas, hojaSeleccionada1, hojaSeleccionada2);
+            hojaIntercambiada1 = listaHojas[hojaSeleccionada1];
+            hojaIntercambiada2 = listaHojas[hojaSeleccionada2];
             for(int i = 0; i < arbol.raiz.evaluacionesMutaciones.size(); i++){
                 //cout << "Evaluando mutaciones de " << i << endl;
                 arbol.raiz.evaluarMutaciones(i);
             }
-            arbol.obtenerParsimonia();
+            if(arbol.obtenerParsimonia(*hojaIntercambiada1, *hojaIntercambiada2, pruebasLocalesMaximas, pruebasLocalesRealizadas)){
+                break;
+            }
             //cout << "\n";
             //arbolPrueba.raiz.inorden();
         }
